@@ -20,6 +20,9 @@ class PlatformConnector():
         #Añadimos simbolos al MarketWatch (EURUSD, CADUSD, ...)
         self._add_symbols_to_marketwatch(symbol_list)
 
+        #Imprimir la info de la cuenta
+        self._print_account_info()
+
 
     def _initialize_platform(self) -> None: #Los metodos que empiezan por '_' son privados por convenio
         """
@@ -86,6 +89,22 @@ class PlatformConnector():
             else:
                 print(f"\nEl simbolo {symbol} ya estaba en el MarketWatch\n")
 
+    def _print_account_info(self) -> None:
+        #Recuperar un objeto de tipo AccountInfo
+        account_info = mt5.account_info()._asdict()
+        print("\n------------------------------------------\nInformación de la cuenta: \n")
+
+        print(f"Account ID: {account_info['login']}")
+        print(f"Nombre trader: {account_info['name']}")
+        print(f"Broker: {account_info['company']}")
+        print(f"Servidor: {account_info['server']}")
+        print(f"Apalancamiento: {account_info['leverage']}")
+        print(f"Divisa de la cuenta: {account_info['currency']}")
+        print(f"Balance de la cuenta: {account_info['balance']}")
+
+        print("------------------------------------------")
+        
+        
 
         
 
