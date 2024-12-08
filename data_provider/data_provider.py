@@ -36,7 +36,7 @@ class DataProvider():
 
         
 
-    def get_latest_closed_bar(self, symbol: str, timeframe: str):
+    def get_latest_closed_bar(self, symbol: str, timeframe: str) -> pd.Series:
 
         #Definir parametros adecuados
         tf = mt5.TIMEFRAME_H1 #fecha apertura
@@ -45,13 +45,73 @@ class DataProvider():
 
         # Recuperar datos de la ultima vela
 
-        bars = pd.DataFrame(mt5.copy_rates_from_pos(
-            symbol,       
-            tf,    
-            from_position,    
-            num_bars       
-        ))
+        try:
 
+            bars_np_array = mt5.copy_rates_from_pos(
+                symbol,       
+                tf,    
+                from_position,    
+                num_bars       
+            )
+
+            if bars_np_array is None:
+                print(f"El simbolo {symbol} no existe o no se han podido recuperar sus datos.   ")
+
+                # Vamos a devolver una serie vacia (Series Empty)
+                return pd.Series()
+
+            bars = pd.DataFrame(bars_np_array)
+            #Convertimos la columna tima a datatime y la ponemos el indice
+            bars['time'] = pd.to_datetime(bars['time'], unit = 's')
+            bars.set_index('time', inplace=True)
+            #Cambiamos nombres de columnas y las reorganizamos
+            bars.rename(columns={'tick_volume': 'tickvol', 'real_volume': 'vol'},inplace=True)
+            bars = bars[['open', 'high', 'low', 'close', 'tickvol', 'vol', 'spread']]
+        except Exception as e:
+            print(f"No se han podido recuperar los datos de la ultima vela de {symbol} {timeframe}. MT5 Error: {mt5.last_error()}, exception: {e}")
+        else:
+            #Si el dataFrame esta vacio, devolvemos una serie vacia
+            if bars.empty:
+                return pd.Series()
+            else:
+                bars.iloc[-1]
+
+
+    def get_latest_closed_bars(self, symbol: str, timeframe: str, num_bars: int = 1) -> pd.DataFrame:
+        #Definir parametros adecuados
+        tf = mt5.TIMEFRAME_H1 #fecha apertura
+        from_position = 1 #desde cual vela vamos a imprimir 
+        bars_count = num_bars if num_bars > 0 else 1 #numero de velas que vamos a imprimir
+
+        try:
+
+            bars_np_array = mt5.copy_rates_from_pos(
+                symbol,       
+                tf,    
+                from_position,    
+                bars_count       
+            )
+
+            if bars_np_array is None:
+                print(f"El simbolo {symbol} no existe o no se han podido recuperar sus datos.   ")
+
+                # Vamos a devolver un DataFrame empty
+                return pd.DataFrame()
+
+            bars = pd.DataFrame(bars_np_array)
+            #Convertimos la columna tima a datatime y la ponemos el indice
+            bars['time'] = pd.to_datetime(bars['time'], unit = 's')
+            bars.set_index('time', inplace=True)
+            #Cambiamos nombres de columnas y las reorganizamos
+            bars.rename(columns={'tick_volume': 'tickvol', 'real_volume': 'vol'},inplace=True)
+            bars = bars[['open', 'high', 'low', 'close', 'tickvol', 'vol', 'spread']]
+
+        except Exception as e:
+            print(f"No se han podido recuperar los datos de la ultima vela de {symbol} {timeframe}. MT5 Error: {mt5.last_error()}, exception: {e}")
+
+        else:
+            # Si todo ha ido bien devolvemos el DataFrame
+            return bars
     
     # copy_rates_from_pos(
     #     symbol,       // symbol name
