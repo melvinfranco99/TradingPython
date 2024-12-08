@@ -14,6 +14,9 @@ class PlatformConnector():
         #Comprobacion de tipo de cuenta
         self._live_account_warning()
 
+        #Comprobacion de tranding algoritmico activado
+        self._check_algo_trading_enabled()
+
 
     def _initialize_platform(self) -> None: #Los metodos que empiezan por '_' son privados por convenio
         """
@@ -51,9 +54,16 @@ class PlatformConnector():
             if not input("ALERTA!!! Cuenta de tipo REAL detectada. Capital en riesgo. Deseas continuar? (y/n): ") == 'y':
                 mt5.shutdown()
                 raise Exception("El usuario ha decidido detener el programa.")
-            
         else:
             print("Cuenta de tipo CONCURSO")
+
+
+    def _check_algo_trading_enabled(self) -> None:
+        # Comprobamos que el trading algoritmico esta activado, mediante terminal_info -> trade_allowed = True
+        if not mt5.terminal_info().trade_allowed:
+            raise Exception("El trading algoritmico esta desactivado, por favor activalo manualmente")
+        else:
+            print("El trading algoritmico esta activado.")
 
         
 
