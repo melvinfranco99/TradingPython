@@ -2,18 +2,20 @@
 import queue
 from data_provider.data_provider import DataProvider
 from typing import Dict, Callable
-from events.events import DataEvent, SignalEvent
+from events.events import DataEvent, SignalEvent, SizingEvent
 import time
 from datetime import datetime
 from signal_generator.interfaces.signal_generator_interface import ISignalGenerator
+from position_sizer.position_sizer import PositionSizer
 
 class TradingDirector():
-    def __init__(self, events_queue: queue.Queue, data_provider: DataProvider, signal_generator: ISignalGenerator):
+    def __init__(self, events_queue: queue.Queue, data_provider: DataProvider, signal_generator: ISignalGenerator, position_sizer: PositionSizer):
         self.events_queue = events_queue
         
         # Referencia de los distintos modulos
         self.DATA_PROVIDER = data_provider
         self.SIGNAL_GENERATOR = signal_generator
+        self.POSITION_SIZER = position_sizer
 
         #Controlador de trading
         self.continue_trading: bool = True
@@ -22,6 +24,7 @@ class TradingDirector():
         self.event_handler: Dict[str, Callable] = {
             "DATA": self._handle_data_event,
             "SIGNAL": self._handle_signal_event,
+            "SIZING": self._handle_sizing_event,
         }
 
     def _dateprint(self) -> str:
@@ -36,6 +39,10 @@ class TradingDirector():
 
         # Procesamos el signal event
         print(f"{self._dateprint()} - Recibido SIGNAL EVENT {event.signal} para {event.symbol}")
+        self.POSITION_SIZER.size_signal(event)
+
+    def _handle_sizing_event(self, event: SizingEvent):
+        print(f"{self._dateprint()} - Recibido SIZING EVENT con volumen {event.volume} para {event.signal} en {event.symbol}")
 
     def execute(self) -> None:
         # Definicion del bucle principal

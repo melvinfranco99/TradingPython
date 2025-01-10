@@ -1,6 +1,8 @@
 from platform_connector.platform_connector import PlatformConnector
 from data_provider.data_provider import DataProvider
 from trading_director.trading_director import TradingDirector
+from position_sizer.position_sizer import PositionSizer
+from position_sizer.properties.position_sizer_properties import MinSizingProps, FixedSizingProps, RiskPctSizingProps
 
 from queue import Queue
 
@@ -29,7 +31,14 @@ if __name__ == "__main__":
                                         fast_period=fast_ma_period, 
                                         slow_period=slow_ma_period)
 
+    POSITION_SIZER = PositionSizer(events_queue=events_queue,
+                                   data_provider=DATA_PROVIDER,
+                                   sizing_properties=MinSizingProps()) # Aqui podemos probar estos dos: FixedSizingProps, RiskPctSizingProps. En este caso en los parentesis debemos introducir los parametros que nos piden, volumen, o riesgo.
+    
     # Creacion del trading director y ejecucion del metodo principal
-    TRADING_DIRECTOR = TradingDirector(events_queue = events_queue, data_provider=DATA_PROVIDER, signal_generator=SIGNAL_GENERATOR)
+    TRADING_DIRECTOR = TradingDirector(events_queue = events_queue, 
+                                       data_provider=DATA_PROVIDER, 
+                                       signal_generator=SIGNAL_GENERATOR, 
+                                       position_sizer=POSITION_SIZER)
 
     TRADING_DIRECTOR.execute()
