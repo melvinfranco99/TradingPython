@@ -3,6 +3,7 @@ from data_provider.data_provider import DataProvider
 from trading_director.trading_director import TradingDirector
 from position_sizer.position_sizer import PositionSizer
 from position_sizer.properties.position_sizer_properties import MinSizingProps, FixedSizingProps, RiskPctSizingProps
+from portfolio.portfolio import Portfolio
 
 from queue import Queue
 
@@ -13,6 +14,7 @@ if __name__ == "__main__":
     #Definicion de variables necesarias para la estrategia
     symbols = ['EURUSD', 'USDJPY']   # , 'EURGBP', 'SP500', 'XAUUSD', 'GBPUSD']
     timeframe = '1min'
+    magic_number = 12345
     slow_ma_period = 50
     fast_ma_period = 25
 
@@ -25,8 +27,11 @@ if __name__ == "__main__":
                                 symbol_list=symbols, 
                                 timeframe=timeframe)
     
+    PORTFOLIO = Portfolio(magic_number=magic_number)
+
     SIGNAL_GENERATOR = SignalMACrossover(events_queue=events_queue, 
                                         data_provider=DATA_PROVIDER, 
+                                        portfolio=PORTFOLIO,
                                         timeframe=timeframe, 
                                         fast_period=fast_ma_period, 
                                         slow_period=slow_ma_period)
